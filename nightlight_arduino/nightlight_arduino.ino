@@ -6,8 +6,8 @@
 #define LED_PIN D6
 #define MAX_BRIGHTNESS 1023
 
-#define DEFAULT_DURATION 1800000
-#define FADE_DURATION 300000
+#define DEFAULT_DURATION 1800000 # 30m
+#define FADE_DURATION 300000 # 5m
 
 HTTPClient http;
 const int capacity = JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(1);
@@ -62,10 +62,11 @@ void loop() {
       if (err) {
         Serial.println("deserialization failed");
       }
-
-      unsigned long val = doc["val"].as<unsigned long>();
-      val = _max(0, _min(MAX_BRIGHTNESS, val));
-      analogWrite(LED_PIN, val);
+      else {
+        unsigned long val = doc["val"].as<unsigned long>();
+        val = _max(0, _min(MAX_BRIGHTNESS, val));
+        analogWrite(LED_PIN, val);
+      }
     }
     else {
       Serial.print("HTTP error: ");
