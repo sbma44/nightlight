@@ -55,6 +55,9 @@ void loop() {
   else {
     char url[50];
     sprintf(url, "http://%s:%s/status", SERVER_IP, SERVER_PORT);
+    Serial.print("Querying ");
+    Serial.println(url);
+    
     http.begin(url);
     int httpCode = http.GET();
     if (httpCode == 200) {
@@ -66,7 +69,10 @@ void loop() {
         Serial.println("deserialization failed");
       }
       else {
-        unsigned long val = doc["val"].as<unsigned long>();
+        long val = doc["val"].as<long>();
+        if (val == -1) {
+          ESP.deepSleep(0);
+        }
         if (val > MAX_BRIGHTNESS)
           val = MAX_BRIGHTNESS;
         if (val < 0)
@@ -79,5 +85,6 @@ void loop() {
       Serial.println(httpCode);
     }
     http.end();
+    delay(10000);
   }
 }
