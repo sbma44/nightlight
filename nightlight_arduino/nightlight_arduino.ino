@@ -9,6 +9,9 @@
 #define DEFAULT_DURATION 1800000 # 30m
 #define FADE_DURATION 300000 # 5m
 
+#define SERVER_IP "192.168.1.2"
+#define SERVER_PORT "8331"
+
 HTTPClient http;
 const int capacity = JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(1);
 StaticJsonDocument<capacity> doc;
@@ -51,7 +54,7 @@ void loop() {
   }
   else {
     char url[50];
-    sprintf(url, "http://%s:%s/", SERVER_IP, SERVER_PORT);
+    sprintf(url, "http://%s:%s/status", SERVER_IP, SERVER_PORT);
     http.begin(url);
     int httpCode = http.GET();
     if (httpCode == 200) {
