@@ -6,8 +6,8 @@
 #define LED_PIN D6
 #define MAX_BRIGHTNESS 1023
 
-#define DEFAULT_DURATION 1800000 # 30m
-#define FADE_DURATION 300000 # 5m
+#define DEFAULT_DURATION 1800000
+#define FADE_DURATION 300000
 
 #define SERVER_IP "192.168.1.2"
 #define SERVER_PORT "8331"
@@ -67,7 +67,10 @@ void loop() {
       }
       else {
         unsigned long val = doc["val"].as<unsigned long>();
-        val = _max(0, _min(MAX_BRIGHTNESS, val));
+        if (val > MAX_BRIGHTNESS)
+          val = MAX_BRIGHTNESS;
+        if (val < 0)
+          val = 0;
         analogWrite(LED_PIN, val);
       }
     }
