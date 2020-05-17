@@ -1,3 +1,6 @@
+import json
+import math
+import datetime
 from http.server import BaseHTTPRequestHandler
 from urllib import parse
 
@@ -29,10 +32,27 @@ class GetHandler(BaseHTTPRequestHandler):
                 '{}={}'.format(name, value.rstrip())
             )
         message_parts.append('')
-        message = '\r\n'.join(message_parts)
+
+        FADE_OUT = 5
+        MAX_VAL = 1023
+        d = datetime.datetime.now()
+        hour = d.hour
+        minute = d.minute
+        if hour == 20:
+            if minute < 50:
+                val = MAX_VAL
+            else:
+                val = math.floor(((FADE_OUT - (minute - FADE_OUT)) / (FADE_OUT * 1.0)) * MAX_VAL)
+        elif hour < 20:
+            val = 0 # don't show anything but keep querying
+        elif hour >= 21:
+            val = -1 # sleep until reset
+
+
+        message = json.dumps({'val' : int(val)})
         self.send_response(200)
         self.send_header('Content-Type',
-                         'text/plain; charset=utf-8')
+                         'application/json; charset=utf-8')
         self.end_headers()
         self.wfile.write(message.encode('utf-8'))
 
