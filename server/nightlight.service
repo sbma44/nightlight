@@ -2,6 +2,8 @@
 Description=Ellie's nightlight
 
 [Service]
+Restart=on-failure
+RestartSec=30
 Type=simple
 ExecStart=/home/pi/nightlight/server/.venv/bin/python3 /home/pi/nightlight/server/nightlight_server.py
 
