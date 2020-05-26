@@ -3,6 +3,12 @@ import time
 import math
 import datetime
 import paho.mqtt.client as mqtt
+from pushover import Client
+
+try:
+    from local_settings import *
+except:
+    pass
 
 TOPIC = 'nightlight'
 SESSION_LENGTH = 30
@@ -14,6 +20,10 @@ global current_session_end
 current_session_end = -1
 global last_value
 last_value = -1
+
+pushover_client = Client(PUSHOVER_USER, api_token=PUSHOVER_TOKEN)
+pushover_client.send_message('nightlight server started')
+
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -40,6 +50,7 @@ def on_message(client, userdata, msg):
             current_session_end = time.time() + (SESSION_LENGTH * 60)
             last_value = -99 # force send of new value
             print('starting new session, ends at {}'.format(current_session_end))
+            pushover_client.send_message('nightlight session started')
         else:
             # turn off immediately
             print('forbidden hours, sending shutdown')
@@ -69,6 +80,7 @@ while True:
         val = min(val, MAX_VALUE)
 
         if val == -1:
+            pushover_client.send_message('nightlight session ending')
             print('session ended, putting nightlight to sleep')
 
         last_value = val
