@@ -2,6 +2,7 @@ import struct
 import time
 import math
 import datetime
+from http.server import BaseHTTPRequestHandler
 import paho.mqtt.client as mqtt
 from pushover import Client
 
@@ -13,7 +14,7 @@ except:
 TOPIC = 'nightlight'
 SESSION_LENGTH = 30
 FADEOUT = 5
-TIC_INCREMENT = 2.0
+TIC_INCREMENT = 1.0
 MAX_VALUE = 1023
 
 global current_session_end
@@ -23,6 +24,18 @@ last_value = -1
 
 pushover_client = Client(PUSHOVER_USER, api_token=PUSHOVER_TOKEN)
 pushover_client.send_message('nightlight server started')
+
+class GetHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        global current_session_end
+
+        current_session_end = time.time() + (SESSION_LENGTH * 60)
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/ascii")
+        self.send_header("Content-Length", "2")
+        self.end_headers()
+        self.wfile.write("OK".encode("utf-8"))
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -64,6 +77,11 @@ client.on_message = on_message
 client.connect("127.0.0.1", 1883, 60)
 client.loop_start()
 
+from http.server import HTTPServer
+server = HTTPServer(('0.0.0.0', 8173), GetHandler)
+print('Starting server, use <Ctrl-C> to stop')
+server.timeout = TIC_INCREMENT
+
 while True:
     if current_session_end < 0:
         val = None
@@ -87,4 +105,5 @@ while True:
         print('sending {} to {}'.format(val, TOPIC))
         client.publish(TOPIC, struct.pack('>i', val))
 
-    time.sleep(TIC_INCREMENT)
+    # replaces sleep; times out after TIC_INCREMENT
+    server.handle_request()
