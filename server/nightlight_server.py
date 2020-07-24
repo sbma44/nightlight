@@ -28,8 +28,13 @@ pushover_client.send_message('nightlight server started')
 class GetHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         global current_session_end
+        global last_value
 
-        current_session_end = time.time() + (SESSION_LENGTH * 60)
+        if '/on' in self.path:
+            current_session_end = time.time() + (SESSION_LENGTH * 60)
+        elif '/off' in self.path:
+            current_session_end = time.time() - 1
+        last_value = -99
 
         self.send_response(200)
         self.send_header("Content-Type", "text/ascii")
